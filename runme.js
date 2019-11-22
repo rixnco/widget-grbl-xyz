@@ -207,6 +207,8 @@ http.createServer(function(req, res) {
 
 }).listen(process.env.PORT);
 
+console.log('Listenning on http://localhost:'+process.env.PORT);
+
 String.prototype.regexIndexOf = function(regex, startpos) {
     var indexOf = this.substring(startpos || 0).search(regex);
     return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
