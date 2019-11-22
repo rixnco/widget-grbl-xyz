@@ -41,6 +41,7 @@ cprequire_test(["inline:com-chilipeppr-widget-xyz"], function (xyz) {
     //xyz.initAs3dPrinting();
     xyz.init();
     
+    var v;
     // load the WCS widget to left
     //$('body').css('margin-left', '80px');
     var wrapDiv = $('<div class="testdiv" style="margin-left:80px;position:relative;">');
