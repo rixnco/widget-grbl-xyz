@@ -130,6 +130,9 @@ cpdefine("inline:com-chilipeppr-widget-xyz", ["chilipeppr_ready", "jquerycookie"
             this.btnSetup();
             this.menuSetup();
             this.jogSetup();
+
+            this.pencilSetup();
+
             this.forkSetup();
             this.toolbarSetup();
 
@@ -182,6 +185,90 @@ cpdefine("inline:com-chilipeppr-widget-xyz", ["chilipeppr_ready", "jquerycookie"
             var that = this;
             console.log(this.name + " done loading.");
         },
+        pencilSetup: function() {
+            // add mouseover events to DRO numbers
+            //$('#com-chilipeppr-widget-xyz-x').mouseover(this.pencilOnMouseover.bind(this));
+            //$('#com-chilipeppr-widget-xyz-x').mouseout(this.pencilOnMouseout.bind(this));
+            $('#com-chilipeppr-widget-xyz-x').hover(this.pencilOnMouseover.bind(this), this.pencilOnMouseout.bind(this));
+            $('#com-chilipeppr-widget-xyz-y').hover(this.pencilOnMouseover.bind(this), this.pencilOnMouseout.bind(this));
+            $('#com-chilipeppr-widget-xyz-z').hover(this.pencilOnMouseover.bind(this), this.pencilOnMouseout.bind(this));
+            $('#com-chilipeppr-widget-xyz-a').hover(this.pencilOnMouseover.bind(this), this.pencilOnMouseout.bind(this));
+        },
+        pencilOnMouseover: function(evt) {
+            console.log("got pencilOnMouseover. evt:", evt);
+            var tgtEl = $(evt.currentTarget);
+            var btn = $('<button class="btn btn-xs btn-default xyz-pencil"><span class="glyphicon glyphicon-pencil"></span></button>');
+            btn.click(this.pencilClick.bind(this));
+            tgtEl.find('.com-chilipeppr-xyz-pos-well').prepend(btn);
+            
+            // attach descriptive popoover
+            btn.popover({
+                animation: true,
+                delay: 500,
+                placement: "auto",
+                container: "body",
+                trigger: "hover",
+                title: "Enter a new coordinate",
+                content: "Move to a new coordinate in this axis by modifying the value and hitting the enter key."
+            });
+        },
+        pencilOnMouseout: function(evt) {
+            console.log("got pencilOnMouseout. evt:", evt);
+            var tgtEl = $(evt.currentTarget);
+            this.pencilHide(tgtEl);
+        },
+        pencilClick: function(evt) {
+            console.log("got pencilClick. evt:", evt);
+            var tgtEl = $(evt.currentTarget);
+            
+            var txt = $('<input type="number" class="form-control xyz-number" placeholder="Enter New Coord">');
+            txt.keyup(this.pencilKeypress.bind(this));
+            var posEl = tgtEl.parents('.com-chilipeppr-xyz-pos-well');
+            console.log("lastCoords:", this.lastCoords, "lastVal:", this.lastVal);
+            var val = this.lastVal[posEl.data('axis')];
+            txt.val(val);
+            posEl.prepend(txt);
+            txt.focus();
+            
+            // hide popover
+            posEl.find('button').popover('hide');
+        },
+        pencilCtr: 0,
+        pencilKeypress: function(evt) {
+            console.log("got pencilKeypress. evt:", evt);
+            var tgtEl = $(evt.currentTarget);
+            var posEl = tgtEl.parents('.com-chilipeppr-xyz-pos-well');
+            var axis = posEl.data('axis').toUpperCase();
+            console.log("axis:", axis);
+            
+            // see if return key
+            if (evt.keyCode == 13) {
+                console.log("enter key hit");
+                
+                // send gcode
+                var gcode = "G90 G0 " + axis + tgtEl.val();
+                console.log("about to send gcode:", gcode);
+                chilipeppr.publish('/com-chilipeppr-widget-serialport/jsonSend', {
+                    D: gcode, 
+                    Id:"axes" + this.pencilCtr++
+                });
+                
+                this.pencilHide(tgtEl.parents('.com-chilipeppr-xyz-pos-well'));
+            } else if (evt.keyCode == 27) {
+                console.log("ESC key hit");
+                this.pencilHide(tgtEl.parents('.com-chilipeppr-xyz-pos-well'));
+            }
+            
+            
+        },
+        pencilHide: function(tgtEl) {
+        		console.log("pencilHide");
+        		// hide popover
+          tgtEl.find('button').popover('hide');
+            //tgtEl.popover('hide');
+            tgtEl.find('.xyz-pencil').remove();
+            tgtEl.find('.xyz-number').remove();
+        },        
         initAs3dPrinting: function() {
             // by default we'll show the A/B/C axes
             $('#com-chilipeppr-widget-xyz-a').removeClass("hidden");
